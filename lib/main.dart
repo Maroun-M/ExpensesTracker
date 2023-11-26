@@ -164,12 +164,16 @@ class _MyHomePageState extends State<MyHomePage> {
             children: <Widget>[
               _buildTransactionSection(
                   'Income', 'USD', 'LBP', Icons.arrow_upward, Colors.green),
-              _buildTransactionTable(
-                  'Income Transactions', incomeTransactions),
+              SizedBox(height: 16),
               _buildTransactionSection(
                   'Expense', 'USD', 'LBP', Icons.arrow_downward, Colors.red),
+              SizedBox(height: 16),
               _buildTransactionTable(
-                  'Expense Transactions', expenseTransactions),
+                  'Income Transactions', incomeTransactions, Colors.green),
+              SizedBox(height: 16),
+              _buildTransactionTable(
+                  'Expense Transactions', expenseTransactions, Colors.red),
+              SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -197,58 +201,82 @@ class _MyHomePageState extends State<MyHomePage> {
     TextEditingController controllerLBP = TextEditingController();
     TextEditingController controllerDescription = TextEditingController();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
             title,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        ),
-        _buildDescriptionInput(controllerDescription),
-        Row(
-          children: [
-            _buildTransactionInput(labelUSD, controllerUSD),
-            SizedBox(width: 10),
-            ElevatedButton(
-              onPressed: () {
-                double amountUSD = double.tryParse(controllerUSD.text) ?? 0;
-                String description = controllerDescription.text;
-                _addTransaction(title, amountUSD, 'USD', description);
-              },
-              child: Text('Add $title (USD)'),
-              style: ElevatedButton.styleFrom(
-                primary: buttonColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          SizedBox(height: 16),
+          _buildDescriptionInput(controllerDescription),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              _buildTransactionInput(labelUSD, controllerUSD),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  double amountUSD = double.tryParse(controllerUSD.text) ?? 0;
+                  String description = controllerDescription.text;
+                  _addTransaction(title, amountUSD, 'USD', description);
+                },
+                child: Text('Add $title (USD)'),
+                style: ElevatedButton.styleFrom(
+                  primary: buttonColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            _buildTransactionInput(labelLBP, controllerLBP),
-            SizedBox(width: 10),
-            ElevatedButton(
-              onPressed: () {
-                double amountLBP = double.tryParse(controllerLBP.text) ?? 0;
-                String description = controllerDescription.text;
-                _addTransaction(title, amountLBP, 'LBP', description);
-              },
-              child: Text('Add $title (LBP)'),
-              style: ElevatedButton.styleFrom(
-                primary: buttonColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            ],
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              _buildTransactionInput(labelLBP, controllerLBP),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  double amountLBP = double.tryParse(controllerLBP.text) ?? 0;
+                  String description = controllerDescription.text;
+                  _addTransaction(title, amountLBP, 'LBP', description);
+                },
+                child: Text('Add $title (LBP)'),
+                style: ElevatedButton.styleFrom(
+                  primary: buttonColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDescriptionInput(TextEditingController controller) {
+    return Column(
+      children: [
+        Text('Description:'),
+        SizedBox(height: 5),
+        Container(
+          width: 250,
+          child: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
             ),
-          ],
+          ),
         ),
-        SizedBox(height: 20),
       ],
     );
   }
@@ -273,45 +301,27 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildDescriptionInput(TextEditingController controller) {
-    return Column(
-      children: [
-        Text('Description:'),
-        SizedBox(height: 5),
-        Container(
-          width: 250,
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTransactionTable(
-      String title, List<Transaction> transactions) {
+      String title, List<Transaction> transactions, Color tableColor) {
     if (transactions.isEmpty) {
       return Container(); // Return an empty container if there are no transactions
     }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Text(
             title,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: DataTable(
+          SizedBox(height: 16),
+          DataTable(
+            headingRowColor: MaterialStateColor.resolveWith((states) => tableColor),
             columns: [
               DataColumn(label: Text('Number')),
               DataColumn(label: Text('Amount')),
@@ -339,9 +349,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ]);
             }).toList(),
           ),
-        ),
-        SizedBox(height: 20),
-      ],
+        ],
+      ),
     );
   }
 
