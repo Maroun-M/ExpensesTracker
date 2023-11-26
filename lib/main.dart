@@ -102,6 +102,22 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  void _deleteTransaction(Transaction transaction, List<Transaction> transactions) async {
+    transactions.remove(transaction);
+
+    // Save transactions locally
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> incomeTransactionsJson =
+    incomeTransactions.map((t) => jsonEncode(t.toMap())).toList();
+    List<String> expenseTransactionsJson =
+    expenseTransactions.map((t) => jsonEncode(t.toMap())).toList();
+
+    prefs.setStringList('incomeTransactions', incomeTransactionsJson);
+    prefs.setStringList('expenseTransactions', expenseTransactionsJson);
+
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -140,33 +156,36 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text('Expense Tracker'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _buildTransactionSection(
-                'Income', 'USD', 'LBP', Icons.arrow_upward, Colors.green),
-            _buildTransactionTable(
-                'Income Transactions', incomeTransactions),
-            _buildTransactionSection(
-                'Expense', 'USD', 'LBP', Icons.arrow_downward, Colors.red),
-            _buildTransactionTable(
-                'Expense Transactions', expenseTransactions),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Balance (USD): \$${_formatAmount(balanceUSD)}',
-                style: TextStyle(fontSize: 20),
+      body: Container(
+        margin: EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildTransactionSection(
+                  'Income', 'USD', 'LBP', Icons.arrow_upward, Colors.green),
+              _buildTransactionTable(
+                  'Income Transactions', incomeTransactions),
+              _buildTransactionSection(
+                  'Expense', 'USD', 'LBP', Icons.arrow_downward, Colors.red),
+              _buildTransactionTable(
+                  'Expense Transactions', expenseTransactions),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Balance (USD): \$${_formatAmount(balanceUSD)}',
+                  style: TextStyle(fontSize: 20),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Balance (LBP): L£${_formatAmount(balanceLBP)}',
-                style: TextStyle(fontSize: 20),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Balance (LBP): L£${_formatAmount(balanceLBP)}',
+                  style: TextStyle(fontSize: 20),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -188,6 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
+        _buildDescriptionInput(controllerDescription),
         Row(
           children: [
             _buildTransactionInput(labelUSD, controllerUSD),
@@ -228,8 +248,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-        SizedBox(height: 10),
-        _buildDescriptionInput(controllerDescription),
         SizedBox(height: 20),
       ],
     );
@@ -261,7 +279,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Text('Description:'),
         SizedBox(height: 5),
         Container(
-          width: 200,
+          width: 250,
           child: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -288,23 +306,39 @@ class _MyHomePageState extends State<MyHomePage> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-        DataTable(
-          columns: [
-            DataColumn(label: Text('Number')),
-            DataColumn(label: Text('Amount')),
-            DataColumn(label: Text('Currency')),
-            DataColumn(label: Text('Date')),
-            DataColumn(label: Text('Description')),
-          ],
-          rows: transactions.map((transaction) {
-            return DataRow(cells: [
-              DataCell(Text((transactions.indexOf(transaction) + 1).toString())),
-              DataCell(Text(_formatAmount(transaction.amount))),
-              DataCell(Text(transaction.currency)),
-              DataCell(Text(DateFormat('yyyy-MM-dd HH:mm').format(transaction.dateTime))),
-              DataCell(Text(transaction.description)),
-            ]);
-          }).toList(),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: DataTable(
+            columns: [
+              DataColumn(label: Text('Number')),
+              DataColumn(label: Text('Amount')),
+              DataColumn(label: Text('Currency')),
+              DataColumn(label: Text('Date')),
+              DataColumn(label: Text('Description')),
+              DataColumn(label: Text('Action')),
+            ],
+            rows: transactions.map((transaction) {
+              return DataRow(cells: [
+                DataCell(Text((transactions.indexOf(transaction) + 1).toString())),
+                DataCell(Text(_formatAmount(transaction.amount))),
+                DataCell(Text(transaction.currency)),
+                DataCell(Text(DateFormat('yyyy-MM-dd HH:mm').format(transaction.dateTime))),
+                DataCell(Text(transaction.description)),
+                DataCell(
+                  ElevatedButton(
+                    onPressed: () => _deleteTransaction(transaction, transactions),
+                    child: Icon(Icons.delete),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.red,
+                    ),
+                  ),
+                ),
+              ]);
+            }).toList(),
+          ),
         ),
         SizedBox(height: 20),
       ],
